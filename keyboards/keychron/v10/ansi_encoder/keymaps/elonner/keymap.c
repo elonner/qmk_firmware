@@ -19,10 +19,11 @@
 // clang-format off
 
 enum layers{
-    QWER,
     DVOR,
+    QWER,
     NUMS,
     ARWS,
+    BOOT,
     WIN_BASE,
     WIN_FN
 };
@@ -32,26 +33,53 @@ enum layers{
 #define KC_DESL LCTL(KC_LEFT)
 #define KC_DESR LCTL(KC_RGHT)
 #define GRAVE_MODS  (MOD_BIT(KC_LSFT)|MOD_BIT(KC_RSFT)|MOD_BIT(KC_LGUI)|MOD_BIT(KC_RGUI)|MOD_BIT(KC_LALT)|MOD_BIT(KC_RALT))
+#define TG_NUM_LOCK (TG(NUMS))
+
+bool num_lock_active = false; // flag to indicate whether the layer is active
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case TG_NUM_LOCK:
+            if (record->event.pressed) {
+                num_lock_active = !num_lock_active; // toggle the flag
+            }
+            break;
+    }
+    return true;
+}
+
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    if (host_keyboard_led_state().caps_lock) {
+        RGB_MATRIX_INDICATOR_SET_COLOR(78, 220, 14, 0); // assuming caps lock is at led #5
+    } else {
+        RGB_MATRIX_INDICATOR_SET_COLOR(78, 0, 0, 0);
+    }
+    if (num_lock_active) {
+        RGB_MATRIX_INDICATOR_SET_COLOR(11, 220, 14, 0); // assuming layer indicator is at led #6
+    } else {
+        RGB_MATRIX_INDICATOR_SET_COLOR(11, 0, 0, 0);
+    }
+    return false;
+}
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+    [DVOR] = LAYOUT_ansi_89(
+        KC_MUTE,  LT(BOOT, KC_ESC),   KC_BRID,  KC_BRIU,  _______,  _______,  _______,   _______,  _______,  _______,  KC_DESL,  KC_DESR,  TG_NUM_LOCK, _______, _______, TG(QWER),
+        KC_MPLY,  KC_DLR,   KC_AMPR,  KC_LBRC,  KC_LCBR,  KC_RCBR,  KC_LPRN,   KC_EQL,   KC_ASTR,  KC_RPRN,  KC_PLUS,  KC_RBRC,  KC_EXLM,  KC_HASH,  KC_BSPC,            KC_DEL,
+        LCMD(KC_P), KC_TAB, KC_SCLN,  KC_COMM,  KC_DOT,   KC_P,     KC_Y,      KC_F,     KC_G,     KC_C,     KC_R,     KC_L,     KC_SLSH,  KC_AT,    KC_BSLS,            KC_PGUP,
+        _______,  KC_LOPT,  KC_A,     KC_O,     KC_E,     KC_U,     KC_I,      KC_D,     KC_H,     KC_T,     KC_N,     KC_S,     KC_MINS,            KC_ENT,             KC_PGDN,
+        _______,  KC_LSFT,  KC_QUOT,  KC_Q,     KC_J,     KC_K,     KC_X, KC_X, KC_B,    KC_M,     KC_W,     KC_V,     KC_Z,            KC_RSFT,               KC_UP,
+        _______,  KC_CAPS,  KC_LCTL,            KC_LOPT,  KC_LCMD,   KC_SPC,   LT(ARWS, KC_SPC),  KC_RCMD,                                           KC_LEFT,  KC_DOWN,  KC_RGHT),
+
     [QWER] = LAYOUT_ansi_89(
-        KC_MUTE,  KC_ESC,   KC_BRID,  KC_BRIU,  _______,  _______,  _______,   _______,  _______,  _______,  KC_DESL,  KC_DESR,  KC_NO,    _______,  QK_BOOT,            TG(DVOR),
+        KC_MUTE,  LT(BOOT, KC_ESC),   KC_BRID,  KC_BRIU,  _______,  _______,  _______,   _______,  _______,  _______,  KC_DESL,  KC_DESR,  KC_NO,    _______,  _______,  TG(QWER),
         KC_MPLY,  KC_GRV,   KC_1,     KC_2,     KC_3,     KC_4,     KC_5,      KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_MINS,  KC_EQL,   KC_BSPC,            KC_DEL,
         LCMD(KC_P), KC_TAB, KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,      KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_LBRC,  KC_RBRC,  KC_BSLS,            KC_PGUP,
         _______,  KC_LOPT,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,      KC_H,     KC_J,     KC_K,     KC_L,     KC_SCLN,  KC_QUOT,            KC_ENT,             KC_PGDN,
         _______,  KC_LSFT,            KC_Z,     KC_X,     KC_C,     KC_V,      KC_B,     KC_B,     KC_N,     KC_M,     KC_COMM,  KC_DOT,   KC_SLSH,  KC_RSFT,  KC_UP,
         _______,  KC_CAPS,  KC_LCTL,            KC_LOPT,  KC_LCMD,  KC_SPC,                        KC_SPC,             KC_RCMD,                      KC_LEFT,  KC_DOWN,  KC_RGHT),
     
-    [DVOR] = LAYOUT_ansi_89(
-        KC_MUTE,  KC_ESC,   KC_BRID,  KC_BRIU,  _______,  _______,  _______,   _______,  _______,  _______,  KC_DESL,  KC_DESR,  TG(NUMS), _______,  QK_BOOT,            TG(DVOR),
-        KC_MPLY,  KC_DLR,   KC_AMPR,  KC_LBRC,  KC_LCBR,  KC_RCBR,  KC_LPRN,   KC_EQL,   KC_ASTR,  KC_RPRN,  KC_PLUS,  KC_RBRC,  KC_EXLM,  KC_HASH,  KC_BSPC,            KC_DEL,
-        LCMD(KC_P), KC_TAB, KC_SCLN,  KC_COMM,  KC_DOT,   KC_P,     KC_Y,      KC_F,     KC_G,     KC_C,     KC_R,     KC_L,     KC_SLSH,  KC_AT,    KC_BSLS,            KC_PGUP,
-        _______,  KC_LOPT,  KC_A,     KC_O,     KC_E,     KC_U,     KC_I,      KC_D,     KC_H,     KC_T,     KC_N,     KC_S,     KC_MINS,            KC_ENT,             KC_PGDN,
-        _______,  KC_LSFT,  KC_QUOT,  KC_Q,     KC_J,     KC_K,     KC_X, KC_X, KC_B,    KC_M,     KC_W,     KC_V,     KC_Z,            KC_RSFT,               KC_UP,
-        _______,  KC_CAPS,  KC_LCTL,            KC_LOPT,  KC_LCMD,   KC_SPC,   LT(ARWS, KC_SPC),  KC_RCMD,                                           KC_LEFT,  KC_DOWN,  KC_RGHT),
-    
     [NUMS] = LAYOUT_ansi_89(
-        _______,  _______,  _______,  _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
+        _______,  _______,            _______,  _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______, _______,
         _______,  _______,  KC_1,     KC_2,     KC_3,     KC_4,     KC_5,      KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     _______,  _______,  _______,            _______,
         _______,  _______,  _______,  _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
         _______,  _______,  _______, _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,            _______,            _______,
@@ -59,10 +87,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______,  _______,  _______,            _______,  _______,  _______,                       _______,            _______,                      _______,  _______,  _______),
 
     [ARWS] = LAYOUT_ansi_89(
+        _______,  _______,            _______,  _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,
         _______,  _______,  _______,  _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
+        _______,  _______,  _______,  _______,  _______,  _______,  _______,   _______,  _______,  KC_UP,  _______,  _______,  _______,  _______,  _______,            RGB_MOD,
+        _______,  _______,  _______, _______,  _______,  _______,  _______,   _______,  KC_LEFT,  KC_DOWN,  KC_RGHT,  _______,  _______,            _______,            RGB_RMOD,
+        _______,  _______,            _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  RGB_VAI,
+        _______,  _______,  _______,            _______,  _______,  _______,                       _______,            _______,                      RGB_HUD,  RGB_VAD,  RGB_HUI),
+
+    [BOOT] = LAYOUT_ansi_89(
+        _______,  _______,            _______,  _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  QK_BOOT,  _______,
         _______,  _______,  _______,  _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,            _______,
-        _______,  _______,  _______,  _______,  _______,  _______,  _______,   _______,  _______,  KC_UP,  _______,  _______,  _______,  _______,  _______,            _______,
-        _______,  _______,  _______, _______,  _______,  _______,  _______,   _______,  KC_LEFT,  KC_DOWN,  KC_RGHT,  _______,  _______,            _______,            _______,
+        _______,  _______,  _______,  _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,   _______,  _______,            _______,
+        _______,  _______,  _______, _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,            _______,            _______,
         _______,  _______,            _______,  _______,  _______,  _______,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,
         _______,  _______,  _______,            _______,  _______,  _______,                       _______,            _______,                      _______,  _______,  _______),
 
@@ -106,7 +142,6 @@ const key_override_t nine_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_PLUS, 
 const key_override_t zero_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_RBRC, KC_0);
 const key_override_t exclm_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_EXLM, KC_PERC);
 const key_override_t hash_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_HASH, KC_GRV);
-
 // This globally defines all key overrides to be used
 const key_override_t **key_overrides = (const key_override_t *[]){
 	&delete_key_override,
@@ -128,10 +163,11 @@ const key_override_t **key_overrides = (const key_override_t *[]){
 
 #if defined(ENCODER_ENABLE) && defined(ENCODER_MAP_ENABLE)
 const uint16_t PROGMEM encoder_map[][1][2] = {
-    [QWER] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
     [DVOR]   = { ENCODER_CCW_CW(RGB_VAD, RGB_VAI) },
+    [QWER] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
     [NUMS]   = { ENCODER_CCW_CW(RGB_VAD, RGB_VAI) },
     [ARWS]   = { ENCODER_CCW_CW(RGB_VAD, RGB_VAI) },
+    [BOOT]   = { ENCODER_CCW_CW(RGB_VAD, RGB_VAI) },
     [WIN_BASE] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
     [WIN_FN]   = { ENCODER_CCW_CW(RGB_VAD, RGB_VAI) }
 };
