@@ -34,13 +34,20 @@ enum layers{
 #define KC_DESR LCTL(KC_RGHT)
 #define GRAVE_MODS  (MOD_BIT(KC_LSFT)|MOD_BIT(KC_RSFT)|MOD_BIT(KC_LGUI)|MOD_BIT(KC_RGUI)|MOD_BIT(KC_LALT)|MOD_BIT(KC_RALT))
 #define TG_NUM_LOCK (TG(NUMS))
+#define TG_QWER (TG(QWER))
 
 bool num_lock_active = false; // flag to indicate whether the layer is active
+bool qwer_active = false;
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case TG_NUM_LOCK:
             if (record->event.pressed) {
                 num_lock_active = !num_lock_active; // toggle the flag
+            }
+            break;
+        case TG_QWER:
+            if (record->event.pressed) {
+                qwer_active = !qwer_active; // toggle the flag
             }
             break;
     }
@@ -58,12 +65,17 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     } else {
         RGB_MATRIX_INDICATOR_SET_COLOR(11, 0, 0, 0);
     }
+    if (qwer_active) {
+        RGB_MATRIX_INDICATOR_SET_COLOR(14, 14, 168, 0); // assuming layer indicator is at led #6
+    } else {
+        RGB_MATRIX_INDICATOR_SET_COLOR(14, 0, 0, 0);
+    }
     return false;
 }
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [DVOR] = LAYOUT_ansi_89(
-        KC_MUTE,  LT(BOOT, KC_ESC),   KC_BRID,  KC_BRIU,  _______,  _______,  _______,   _______,  _______,  _______,  KC_DESL,  KC_DESR,  TG_NUM_LOCK, _______, _______, TG(QWER),
+        KC_MUTE,  LT(BOOT, KC_ESC),   KC_BRID,  KC_BRIU,  _______,  _______,  _______,   _______,  _______,  _______,  KC_DESL,  KC_DESR,  TG_NUM_LOCK, _______, _______, TG_QWER,
         KC_MPLY,  KC_DLR,   KC_AMPR,  KC_LBRC,  KC_LCBR,  KC_RCBR,  KC_LPRN,   KC_EQL,   KC_ASTR,  KC_RPRN,  KC_PLUS,  KC_RBRC,  KC_EXLM,  KC_HASH,  KC_BSPC,            KC_DEL,
         LCMD(KC_P), KC_TAB, KC_SCLN,  KC_COMM,  KC_DOT,   KC_P,     KC_Y,      KC_F,     KC_G,     KC_C,     KC_R,     KC_L,     KC_SLSH,  KC_AT,    KC_BSLS,            KC_PGUP,
         _______,  KC_LOPT,  KC_A,     KC_O,     KC_E,     KC_U,     KC_I,      KC_D,     KC_H,     KC_T,     KC_N,     KC_S,     KC_MINS,            KC_ENT,             KC_PGDN,
@@ -71,7 +83,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______,  KC_CAPS,  KC_LCTL,            KC_LOPT,  KC_LCMD,   KC_SPC,   LT(ARWS, KC_SPC),  KC_RCMD,                                           KC_LEFT,  KC_DOWN,  KC_RGHT),
 
     [QWER] = LAYOUT_ansi_89(
-        KC_MUTE,  LT(BOOT, KC_ESC),   KC_BRID,  KC_BRIU,  _______,  _______,  _______,   _______,  _______,  _______,  KC_DESL,  KC_DESR,  KC_NO,    _______,  _______,  TG(QWER),
+        KC_MUTE,  LT(BOOT, KC_ESC),   KC_BRID,  KC_BRIU,  _______,  _______,  _______,   _______,  _______,  _______,  KC_DESL,  KC_DESR,  KC_NO,    _______,  _______,  _______,
         KC_MPLY,  KC_GRV,   KC_1,     KC_2,     KC_3,     KC_4,     KC_5,      KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_MINS,  KC_EQL,   KC_BSPC,            KC_DEL,
         LCMD(KC_P), KC_TAB, KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,      KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_LBRC,  KC_RBRC,  KC_BSLS,            KC_PGUP,
         _______,  KC_LOPT,  KC_A,     KC_S,     KC_D,     KC_F,     KC_G,      KC_H,     KC_J,     KC_K,     KC_L,     KC_SCLN,  KC_QUOT,            KC_ENT,             KC_PGDN,
